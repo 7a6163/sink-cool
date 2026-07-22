@@ -104,3 +104,12 @@ gem build sink-cool.gemspec
 
 See the [Sink API documentation](https://docs.sink.cool/api/) for endpoint and
 payload details.
+
+## Releasing
+
+Configure a trusted publisher for this repository and `release.yml` on
+RubyGems.org. Then run the **Release** workflow manually from GitHub Actions.
+
+## License
+
+This gem is available under the [MIT License](LICENSE.txt).

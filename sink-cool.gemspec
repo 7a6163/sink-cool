@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.1"
 
-  spec.files = Dir["lib/**/*.rb"] + %w[README.md CHANGELOG.md]
+  spec.files = Dir["lib/**/*.rb"] + %w[README.md CHANGELOG.md LICENSE.txt]
   spec.require_paths = ["lib"]
 
   spec.add_development_dependency "minitest", "~> 6.0"

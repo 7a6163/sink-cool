@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- GitHub Actions workflows for CI and trusted publishing to RubyGems.org.
+- MIT License.
+
 ## 0.1.0 - 2026-07-23
 
 ### Added
