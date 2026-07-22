@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "minitest/autorun"
-require "sink"
+require "sink-cool"
 
 class SinkConfigurationTest < Minitest::Test
   def setup
