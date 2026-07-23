@@ -7,9 +7,16 @@ Gem::Specification.new do |spec|
   spec.version = Sink::VERSION
   spec.authors = ["Sink Ruby contributors"]
   spec.summary = "Ruby client for the Sink URL shortener API"
+  spec.description = "A lightweight Ruby client for managing links with the Sink URL shortener API."
   spec.homepage = "https://docs.sink.cool/api/"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.1"
+  spec.required_ruby_version = ">= 3.3"
+  spec.metadata = {
+    "homepage_uri" => spec.homepage,
+    "source_code_uri" => "https://github.com/7a6163/sink-cool",
+    "changelog_uri" => "https://github.com/7a6163/sink-cool/blob/main/CHANGELOG.md",
+    "rubygems_mfa_required" => "true"
+  }
 
   spec.files = Dir["lib/**/*.rb"] + %w[README.md CHANGELOG.md LICENSE.txt]
   spec.require_paths = ["lib"]

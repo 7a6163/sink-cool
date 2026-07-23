@@ -3,22 +3,37 @@
 require_relative "sink/version"
 require_relative "sink/error"
 require_relative "sink/client"
+require "thread"
 
 module Sink
   Configuration = Struct.new(:base_url, :token, :open_timeout, :read_timeout, keyword_init: true)
+  CLIENT_MUTEX = Mutex.new
 
   class << self
     def configure
-      yield configuration
-      @client = nil
+      configured = configuration.dup
+      yield configured
+
+      CLIENT_MUTEX.synchronize do
+        @configuration = configured
+        @client = nil
+      end
+
+      configured
     end
 
     def configuration
-      @configuration ||= Configuration.new(open_timeout: 5, read_timeout: 30)
+      return @configuration if @configuration
+
+      CLIENT_MUTEX.synchronize do
+        @configuration ||= Configuration.new(open_timeout: 5, read_timeout: 30)
+      end
     end
 
     def client
-      @client ||= Client.new(**configuration.to_h)
+      return @client if @client
+
+      CLIENT_MUTEX.synchronize { @client ||= Client.new(**configuration.to_h) }
     end
   end
 end

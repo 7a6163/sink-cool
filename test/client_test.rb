@@ -79,21 +79,15 @@ class SinkClientTest < Minitest::Test
     response.instance_variable_set(:@read, true)
 
     requests = @requests
-    http = Object.new
-    http.define_singleton_method(:request) do |request|
+    singleton = @client.singleton_class
+    singleton.define_method(:perform_request) do |_uri, request|
       requests << request
       response
     end
 
-    singleton = Net::HTTP.singleton_class
-    singleton.alias_method :__sink_start, :start
-    singleton.remove_method :start
-    singleton.define_method(:start) { |*, **, &block| block.call(http) }
     yield
   ensure
-    singleton.remove_method :start
-    singleton.alias_method :start, :__sink_start
-    singleton.remove_method :__sink_start
+    singleton&.remove_method(:perform_request)
   end
 
   def assert_requests(*expected)

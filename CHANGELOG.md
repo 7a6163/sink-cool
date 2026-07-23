@@ -8,6 +8,14 @@ All notable changes to this project will be documented in this file.
 
 - GitHub Actions workflows for CI and trusted publishing to RubyGems.org.
 - MIT License.
+- RubyGems project metadata.
+
+### Changed
+
+- Require Ruby 3.3 or newer, matching the tested versions.
+- Run the full Ruby version matrix before publishing.
+- Make global client initialization thread-safe.
+- Isolate HTTP transport in tests without patching `Net::HTTP` globally.
 
 ## 0.1.0 - 2026-07-23
 

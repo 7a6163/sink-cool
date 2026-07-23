@@ -56,7 +56,8 @@ module Sink
 
     def request(method, path, query: nil, body: nil)
       uri = URI("#{@base_url}#{path}")
-      uri.query = URI.encode_www_form(query.compact) if query&.compact&.any?
+      params = query&.compact
+      uri.query = URI.encode_www_form(params) if params&.any?
 
       headers = {
         "Authorization" => "Bearer #{@token}",
@@ -68,15 +69,17 @@ module Sink
       http_request = REQUEST_CLASSES.fetch(method).new(uri, headers)
       http_request.body = JSON.generate(body) if body
 
-      response = Net::HTTP.start(
+      parse_response(perform_request(uri, http_request))
+    end
+
+    def perform_request(uri, request)
+      Net::HTTP.start(
         uri.host,
         uri.port,
         use_ssl: uri.scheme == "https",
         open_timeout: @open_timeout,
         read_timeout: @read_timeout
-      ) { |http| http.request(http_request) }
-
-      parse_response(response)
+      ) { |http| http.request(request) }
     end
 
     def parse_response(response)

@@ -2,6 +2,8 @@
 
 Ruby client for the [Sink](https://sink.cool/) URL shortener API.
 
+Requires Ruby 3.3 or newer.
+
 ## Installation
 
 Add the gem to your bundle:
@@ -28,6 +30,8 @@ Sink.configure do |config|
   config.token = ENV.fetch("SINK_TOKEN")
 end
 ```
+
+Use HTTPS in production so the bearer token is encrypted in transit.
 
 Optional HTTP timeouts:
 
