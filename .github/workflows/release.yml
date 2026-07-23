@@ -61,6 +61,8 @@ jobs:
 
       - name: Publish gem
         uses: rubygems/release-gem@v1
+        with:
+          await-release: false
 
       - name: Publish to GitHub Packages
         env:
