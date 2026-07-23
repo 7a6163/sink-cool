@@ -112,7 +112,16 @@ payload details.
 ## Releasing
 
 Configure a trusted publisher for this repository and `release.yml` on
-RubyGems.org. Then run the **Release** workflow manually from GitHub Actions.
+RubyGems.org. Update `Sink::VERSION` and the matching `CHANGELOG.md` section,
+then push a matching version tag:
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The release workflow tests Ruby 3.3, 3.4, and 4.0 before publishing to
+RubyGems.org, GitHub Packages, and GitHub Releases.
 
 ## License
 

@@ -1,7 +1,8 @@
 name: Release
 
 on:
-  workflow_dispatch:
+  push:
+    tags: ["v*"]
 
 permissions:
   contents: read
@@ -30,10 +31,12 @@ jobs:
 
   release:
     needs: test
+    name: Publish gem
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write
+      packages: write
 
     steps:
       - uses: actions/checkout@v6
@@ -46,5 +49,61 @@ jobs:
           ruby-version: ruby
           bundler-cache: true
 
+      - name: Verify release version
+        run: |
+          set -euo pipefail
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          GEM_VERSION="$(ruby -Ilib -rsink/version -e 'print Sink::VERSION')"
+          test "$TAG_VERSION" = "$GEM_VERSION" || {
+            echo "Tag version $TAG_VERSION does not match gem version $GEM_VERSION"
+            exit 1
+          }
+
       - name: Publish gem
         uses: rubygems/release-gem@v1
+
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          GEM_FILE=(pkg/*.gem)
+          test -f "${GEM_FILE[0]}"
+          mkdir -p "$HOME/.gem"
+          printf -- "---\n:github: Bearer %s\n" "$GITHUB_TOKEN" > "$HOME/.gem/credentials"
+          chmod 0600 "$HOME/.gem/credentials"
+          gem push --key github \
+            --host "https://rubygems.pkg.github.com/${OWNER}" \
+            "${GEM_FILE[0]}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists, skipping"
+            exit 0
+          fi
+
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES_FILE="$(mktemp)"
+          awk -v v="$VERSION" '
+            $0 == "## " v ||
+              index($0, "## " v " - ") == 1 ||
+              $0 == "## [" v "]" ||
+              index($0, "## [" v "] - ") == 1 { found=1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > "$NOTES_FILE"
+
+          if [ ! -s "$NOTES_FILE" ]; then
+            printf "See [CHANGELOG](https://github.com/%s/blob/main/CHANGELOG.md) for changes.\n" \
+              "$GITHUB_REPOSITORY" > "$NOTES_FILE"
+          fi
+
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file "$NOTES_FILE" \
+            pkg/*.gem

@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Require Ruby 3.3 or newer, matching the tested versions.
-- Run the full Ruby version matrix before publishing.
+- Publish version tags to RubyGems.org, GitHub Packages, and GitHub Releases after running the full Ruby version matrix.
 - Make global client initialization thread-safe.
 - Isolate HTTP transport in tests without patching `Net::HTTP` globally.
 
