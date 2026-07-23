@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require "minitest/autorun"
-require "sink"
+require "test_helper"
 
 class SinkClientTest < Minitest::Test
   def setup

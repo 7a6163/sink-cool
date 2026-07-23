@@ -1,5 +1,9 @@
 # sink-cool
 
+[![CI](https://github.com/7a6163/sink-cool/actions/workflows/ci.yml/badge.svg)](https://github.com/7a6163/sink-cool/actions/workflows/ci.yml)
+[![Gem Version](https://img.shields.io/gem/v/sink-cool.svg)](https://rubygems.org/gems/sink-cool)
+[![codecov](https://codecov.io/gh/7a6163/sink-cool/branch/main/graph/badge.svg)](https://codecov.io/gh/7a6163/sink-cool)
+
 Ruby client for the [Sink](https://sink.cool/) URL shortener API.
 
 Requires Ruby 3.3 or newer.
