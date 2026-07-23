@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.1.2 - 2026-07-23
+
+### Fixed
+
+- Grant the release workflow write access so gems reach GitHub Packages.
+- Make the release workflow idempotent, skipping RubyGems and GitHub Packages pushes for versions that already exist.
+
 ## 0.1.1 - 2026-07-23
 
 ### Fixed

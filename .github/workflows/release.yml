@@ -59,12 +59,45 @@ jobs:
             exit 1
           }
 
-      - name: Publish gem
+      - name: Build gem
+        run: |
+          set -euo pipefail
+          mkdir -p pkg
+          gem build sink-cool.gemspec -o "pkg/sink-cool-${GITHUB_REF_NAME#v}.gem"
+
+      - name: Check RubyGems publication
+        id: rubygems
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          if ruby -rjson -rnet/http -e 'v=ARGV[0]; r=Net::HTTP.get_response(URI("https://rubygems.org/api/v1/versions/sink-cool.json")); d=(r.is_a?(Net::HTTPSuccess) ? JSON.parse(r.body) : []); exit(d.any? { |x| x["number"] == v } ? 0 : 1)' "$VERSION"; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish gem to RubyGems
+        if: steps.rubygems.outputs.published != 'true'
         uses: rubygems/release-gem@v1
         with:
           await-release: false
 
+      - name: Check GitHub Packages publication
+        id: ghpackages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          if gh api "/users/${OWNER}/packages/rubygems/sink-cool/versions" --jq '.[].name' 2>/dev/null | grep -qx "$VERSION"; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to GitHub Packages
+        if: steps.ghpackages.outputs.published != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
