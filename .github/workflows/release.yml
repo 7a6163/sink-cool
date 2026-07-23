@@ -78,6 +78,7 @@ jobs:
 
       - name: Publish gem to RubyGems
         if: steps.rubygems.outputs.published != 'true'
+        continue-on-error: true
         uses: rubygems/release-gem@v1
         with:
           await-release: false
