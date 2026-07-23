@@ -99,16 +99,13 @@ jobs:
       - name: Publish to GitHub Packages
         if: steps.ghpackages.outputs.published != 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEM_HOST_API_KEY: "Bearer ${{ secrets.GITHUB_TOKEN }}"
           OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
           GEM_FILE=(pkg/*.gem)
           test -f "${GEM_FILE[0]}"
-          mkdir -p "$HOME/.gem"
-          printf -- "---\n:github: Bearer %s\n" "$GITHUB_TOKEN" > "$HOME/.gem/credentials"
-          chmod 0600 "$HOME/.gem/credentials"
-          gem push --key github \
+          gem push \
             --host "https://rubygems.pkg.github.com/${OWNER}" \
             "${GEM_FILE[0]}"
 
