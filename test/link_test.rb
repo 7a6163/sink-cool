@@ -50,6 +50,16 @@ class SinkLinkTest < Minitest::Test
     assert_equal '#<Sink::Link slug="a" url="https://example.com">', link.inspect
   end
 
+  def test_prefers_the_short_link_from_the_response
+    body = { "link" => { "slug" => "a" }, "shortLink" => "https://custom.example/a" }
+
+    assert_equal "https://custom.example/a", Sink::Link.from_response(body, base_url: "https://sink.example").short_link
+  end
+
+  def test_omits_short_link_without_a_slug
+    assert_nil Sink::Link.from_response({ "id" => "1" }, base_url: "https://sink.example").short_link
+  end
+
   def test_from_response_ignores_non_hash_bodies
     assert_nil Sink::Link.from_response(nil)
     assert_nil Sink::Link.from_response("no")

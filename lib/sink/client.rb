@@ -35,15 +35,15 @@ module Sink
     def verify = Keys.underscore_keys(request(:get, "/api/verify") || {})
 
     def create_link(url:, **attributes)
-      Link.from_response(request(:post, "/api/link/create", body: link_payload(attributes.merge(url: url))))
+      build_link(request(:post, "/api/link/create", body: link_payload(attributes.merge(url: url))))
     end
 
     def edit_link(url:, slug:, **attributes)
-      Link.from_response(request(:put, "/api/link/edit", body: link_payload(attributes.merge(url: url, slug: slug))))
+      build_link(request(:put, "/api/link/edit", body: link_payload(attributes.merge(url: url, slug: slug))))
     end
 
     def upsert_link(url:, **attributes)
-      Link.from_response(request(:post, "/api/link/upsert", body: link_payload(attributes.merge(url: url))))
+      build_link(request(:post, "/api/link/upsert", body: link_payload(attributes.merge(url: url))))
     end
 
     def delete_link(slug)
@@ -51,7 +51,7 @@ module Sink
       true
     end
 
-    def link(slug) = Link.from_response(request(:get, "/api/link/query", query: { slug: slug }))
+    def link(slug) = build_link(request(:get, "/api/link/query", query: { slug: slug }))
 
     def links(limit: nil, cursor: nil, sort: nil, tag: nil, status: nil)
       body = request(:get, "/api/link/list", query: {
@@ -114,7 +114,9 @@ module Sink
       raise ArgumentError, "expires_at must be a Time or a unix timestamp"
     end
 
-    def link_page(body) = page(body, "links") { |link| Link.from_response(link) }
+    def build_link(body) = Link.from_response(body, base_url: @base_url)
+
+    def link_page(body) = page(body, "links") { |link| build_link(link) }
 
     def page(body, key, &build)
       records, cursor, complete = case body

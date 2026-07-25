@@ -109,7 +109,13 @@ class SinkClientTest < Minitest::Test
     link = with_response(200, '{"slug":"example","url":"https://example.com"}') { @client.link("example") }
 
     assert_equal "example", link.slug
-    assert_nil link.short_link
+    assert_equal "https://sink.example/example", link.short_link
+  end
+
+  def test_derives_short_link_for_listed_links
+    page = with_response(200, '{"links":[{"slug":"a"},{"slug":"b"}]}') { @client.links }
+
+    assert_equal %w[https://sink.example/a https://sink.example/b], page.map(&:short_link)
   end
 
   def test_exposes_upsert_status

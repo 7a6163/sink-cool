@@ -108,7 +108,11 @@ link.to_h                  # => { slug: "example", url: "https://example.com", .
 link[:any_future_field]    # raw access to fields without a reader
 ```
 
-`link(slug)` responses carry no short URL, so `short_link` is `nil` there.
+The API only returns `shortLink` for the write endpoints, where it builds the
+value from the protocol and host of the request. `short_link` is therefore
+derived from `base_url` and the slug for `link`, `links`, and `search_links`,
+which matches the API as long as `base_url` is the Worker domain that serves the
+short links.
 
 `upsert_link` never overwrites an existing slug, so check which happened:
 

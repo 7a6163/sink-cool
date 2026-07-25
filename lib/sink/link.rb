@@ -10,15 +10,18 @@ module Sink
 
     attr_reader :attributes
 
-    def self.from_response(body)
+    # The API only builds `shortLink` for write endpoints, from the protocol and
+    # host of the request, so `base_url` reproduces it for the read endpoints.
+    def self.from_response(body, base_url: nil)
       return nil unless body.is_a?(Hash)
 
       link = body["link"].is_a?(Hash) ? body["link"] : body
       attributes = Keys.underscore_keys(link)
-      attributes[:short_link] = body["shortLink"] if body.key?("shortLink")
       attributes[:status] = body["status"] if body.key?("status")
+      attributes[:short_link] = body["shortLink"] ||
+                                (base_url && attributes[:slug] && "#{base_url}/#{attributes[:slug]}")
 
-      new(attributes)
+      new(attributes.compact)
     end
 
     def initialize(attributes)
