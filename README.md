@@ -63,19 +63,17 @@ client = Sink::Client.new(
 client = Sink.client
 
 client.verify
+# => { name: "Sink", auth_method: "site-token", user_email: "admin@example.com", ... }
 
 client.create_link(
   url: "https://example.com/articles/1",
   slug: "article-1",
-  tags: ["articles"]
+  tags: ["articles"],
+  redirect_with_query: true,
+  expires_at: 1.week.from_now
 )
 
-client.edit_link(
-  url: "https://example.com/articles/2",
-  slug: "article-1",
-  tags: ["articles"]
-)
-
+client.edit_link(url: "https://example.com/articles/2", slug: "article-1")
 client.upsert_link(url: "https://example.com", slug: "example")
 client.link("example")
 client.links(limit: 20, sort: "newest", status: "active")
@@ -85,20 +83,107 @@ client.check_links(limit: 6, timeout: 6)
 client.delete_link("example")
 ```
 
-API responses are returned as Ruby hashes or arrays. Requests returning HTTP
-204 return `nil`.
+Attributes are snake_case and converted to the camelCase names the API expects,
+so `redirect_with_query` is sent as `redirectWithQuery`. Unknown attributes
+raise `ArgumentError` instead of being silently dropped by the server.
+`expires_at` accepts a `Time`, a `Date`, or a unix timestamp.
+
+### Links
+
+`create_link`, `edit_link`, `upsert_link`, and `link` all return a `Sink::Link`:
+
+```ruby
+link = client.create_link(url: "https://example.com", slug: "example")
+
+link.slug                  # => "example"
+link.short_link            # => "https://sink.example.com/example"
+link.created_at            # => 2026-07-24 12:00:00 UTC
+link.expires_at            # => Time or nil
+link.expired?              # => false
+link.cloaking?             # => false
+link.redirect_with_query?  # => true
+link.tags                  # => ["articles"]
+link.geo                   # => { "US" => "https://example.com/us" }
+link.to_h                  # => { slug: "example", url: "https://example.com", ... }
+link[:any_future_field]    # raw access to fields without a reader
+```
+
+`link(slug)` responses carry no short URL, so `short_link` is `nil` there.
+
+`upsert_link` never overwrites an existing slug, so check which happened:
+
+```ruby
+link = client.upsert_link(url: "https://example.com", slug: "example")
+
+link.created?  # => true when the link was stored
+link.existing? # => true when the slug already pointed somewhere else
+```
+
+`delete_link` returns `true`.
+
+### Collections
+
+`links`, `search_links`, and `check_links` return a `Sink::Page`, which is
+`Enumerable`:
+
+```ruby
+page = client.links(limit: 20)
+
+page.map(&:slug)
+page.cursor     # => "..." pagination cursor
+page.complete?  # => false when more pages are available
+page.more?      # => true when a following page can be fetched
+```
+
+Use `each_link` to walk every page without handling cursors:
+
+```ruby
+client.each_link(tag: "articles") { |link| puts link.short_link }
+client.each_link.lazy.select(&:expired?).first(10)
+```
+
+`tags` returns `Sink::Tag` records with `name` and `count`.
 
 ## Errors
 
-Non-successful responses raise `Sink::Error`:
+Non-successful responses raise a subclass of `Sink::Error`, so a Rails
+controller can rescue the cases it cares about:
+
+```ruby
+class LinksController < ApplicationController
+  rescue_from Sink::NotFound, with: :not_found
+
+  def create
+    link = Sink.client.create_link(url: params[:url], slug: params[:slug])
+    render json: link.to_h, status: :created
+  rescue Sink::Conflict
+    render json: { error: "slug already taken" }, status: :conflict
+  end
+end
+```
+
+| Class | Raised for |
+| --- | --- |
+| `Sink::ValidationError` | 400, 422 (`error.data` holds the API details) |
+| `Sink::Unauthorized` | 401, usually a wrong site token |
+| `Sink::Forbidden` | 403, including preview mode |
+| `Sink::NotFound` | 404 |
+| `Sink::Conflict` | 409, the slug already exists |
+| `Sink::StorageNotReady` | 423, open Dashboard → Links once after deploying |
+| `Sink::RateLimited` | 429 |
+| `Sink::ServerError` | 5xx |
+| `Sink::TimeoutError` | open or read timeout |
+| `Sink::ConnectionError` | DNS, TLS, and socket failures |
+
+Every error exposes `status`, `message`, `body`, and `data`:
 
 ```ruby
 begin
   Sink.client.link("missing")
 rescue Sink::Error => error
-  error.status
-  error.message
-  error.body
+  error.status  # => 404
+  error.message # => "Not Found"
+  error.body    # => parsed response body
 end
 ```
 

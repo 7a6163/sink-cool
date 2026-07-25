@@ -2,6 +2,10 @@
 
 require_relative "sink/version"
 require_relative "sink/error"
+require_relative "sink/keys"
+require_relative "sink/link"
+require_relative "sink/page"
+require_relative "sink/tag"
 require_relative "sink/client"
 require "thread"
 
