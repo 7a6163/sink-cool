@@ -165,8 +165,6 @@ module Sink
     end
 
     def parse_response(response)
-      return nil if response.code.to_i == 204
-
       body = parse_body(response.body)
       return body if response.is_a?(Net::HTTPSuccess)
 

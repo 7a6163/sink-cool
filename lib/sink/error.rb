@@ -5,7 +5,7 @@ module Sink
     attr_reader :status, :body
 
     def self.for(status:, message:, body: nil)
-      klass = STATUS_ERRORS[status] || (status.to_i >= 500 ? ServerError : self)
+      klass = STATUS_ERRORS[status] || (status >= 500 ? ServerError : self)
       klass.new(message, status: status, body: body)
     end
 

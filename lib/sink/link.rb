@@ -17,7 +17,7 @@ module Sink
 
       link = body["link"].is_a?(Hash) ? body["link"] : body
       attributes = Keys.underscore_keys(link)
-      attributes[:status] = body["status"] if body.key?("status")
+      attributes[:status] = body["status"]
       attributes[:short_link] = body["shortLink"] ||
                                 (base_url && attributes[:slug] && "#{base_url}/#{attributes[:slug]}")
 
@@ -28,15 +28,13 @@ module Sink
       @attributes = attributes.freeze
     end
 
-    %i[id url slug comment title description image apple google password short_link status].each do |name|
+    %i[id url slug comment title description image apple google password short_link status expiration].each do |name|
       define_method(name) { @attributes[name] }
     end
 
     def tags = @attributes[:tags] || []
 
     def geo = @attributes[:geo] || {}
-
-    def expiration = @attributes[:expiration]
 
     def created_at = time(:created_at)
 
