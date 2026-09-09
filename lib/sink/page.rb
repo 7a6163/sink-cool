@@ -25,8 +25,6 @@ module Sink
 
     def [](index) = @records[index]
 
-    def to_a = @records.dup
-
     def inspect = "#<#{self.class} size=#{size} cursor=#{cursor.inspect} complete=#{complete?}>"
   end
 end

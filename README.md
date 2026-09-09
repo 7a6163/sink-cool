@@ -199,6 +199,19 @@ bundle exec rake test
 gem build sink-cool.gemspec
 ```
 
+Line coverage is not enough for a client this small, so the suite is also
+checked with [mutant](https://github.com/mbj/mutant):
+
+```bash
+bundle exec rake mutant                    # whole library, ~90s
+bundle exec mutant run 'Sink::Client*'     # one subject
+```
+
+Each test class declares what it covers with `cover "Sink::Link*"`, which is how
+mutant maps mutations to tests. Roughly fifty mutations stay alive on purpose:
+they are equivalent (`@attributes[:tags]` versus `self[:tags]`) or need a real
+TLS handshake to tell apart.
+
 See the [Sink API documentation](https://docs.sink.cool/api/) for endpoint and
 payload details.
 
