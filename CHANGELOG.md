@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Changed
+
+- `Sink::Error.for` no longer coerces `status` with `to_i`. Its only caller passes an integer; a string status now raises instead of being silently converted.
+
 ## 0.2.1 - 2026-07-25
 
 ### Added
