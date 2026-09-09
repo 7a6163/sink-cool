@@ -1,0 +1,20 @@
+# Mutation testing: bundle exec rake mutant
+usage: opensource
+includes:
+  - lib
+  - test
+requires:
+  - client_test
+  - configuration_test
+  - error_test
+  - keys_test
+  - link_test
+  - transport_test
+integration:
+  name: minitest
+matcher:
+  subjects:
+    - Sink*
+coverage_criteria:
+  process_abort: true
+  timeout: true

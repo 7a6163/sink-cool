@@ -2,7 +2,7 @@
 
 module Sink
   module Keys
-    module_function
+    extend self
 
     def underscore(key)
       key.to_s
